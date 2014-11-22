@@ -1,10 +1,40 @@
 from django.shortcuts import render
 
-from .forms import EmailForm
+from .forms import EmailForm, JoinForm
+from .models import Join
 
-def home(request):
-	print(request.POST["email"])
-	form = EmailForm()
+def get_ip(request):
+	try:
+		x_foward = request.META.get('HTTP_X_FORWARDED_FOR')
+		if x_forward:
+			ip = x_forward.split(",")[0]
+		else:
+			ip = request.META.get('REMOTE_ADDR')
+	except:
+		ip = ""
+
+	return ip
+
+def home(request, debug=False):
+	if debug == True:
+		print(request)
+	# Bad way
+	# form = EmailForm(request.POST)
+	# if form.is_valid():
+	# 	email = form.cleaned_data['email']
+	# 	new_join, created = Join.objects.get_or_create(email=email)
+	# 	print(new_join, created)
+	# 	print(new_join.timestamp)
+	# 	if created:
+	# 		print("This object was created.")
+
+	# Good way
+	form = JoinForm(request.POST or None)
+	if form.is_valid():
+		new_join = form.save(commit=False)
+		new_join.ip_address = get_ip(request)
+		new_join.save()
+
 	context = {'form':form}
 	template = "home.html"
 	return render(request, template, context)
