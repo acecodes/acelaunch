@@ -2,6 +2,7 @@ from django.shortcuts import render
 
 from .forms import EmailForm, JoinForm
 from .models import Join
+from uuid import uuid4
 
 def get_ip(request):
 	try:
@@ -15,9 +16,13 @@ def get_ip(request):
 
 	return ip
 
+def get_ref_id():
+	return str(uuid4())[:11].replace('-','').lower()
+
 def home(request, debug=False):
 	if debug == True:
 		print(request)
+		
 	# Bad way
 	# form = EmailForm(request.POST)
 	# if form.is_valid():
@@ -32,6 +37,7 @@ def home(request, debug=False):
 	form = JoinForm(request.POST or None)
 	if form.is_valid():
 		new_join = form.save(commit=False)
+		new_join.ref_id = get_ref_id()
 		new_join.ip_address = get_ip(request)
 		new_join.save()
 
