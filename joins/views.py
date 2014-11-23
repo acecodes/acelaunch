@@ -34,6 +34,12 @@ def home(request, debug=False):
 	if debug == True:
 		print(request)
 
+	try:
+		join_id = request.session['join_id_ref']
+		obj = Join.objects.get(id=join_id)
+	except:
+		obj = None
+
 	form = JoinForm(request.POST or None)
 	if form.is_valid():
 		new_join = form.save(commit=False)
